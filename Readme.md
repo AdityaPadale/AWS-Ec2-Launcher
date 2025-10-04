@@ -55,6 +55,6 @@ Click **Launch Instance** and wait until status = **Running**.
 
 ### 9. Connect to Instance  
 - Select your instance → **Connect**  
-- Use SSH command: Git ash 
+- Use SSH command: Git bash 
 ```bash
 ssh -i your-key.pem ec2-user@<Public-IP>
