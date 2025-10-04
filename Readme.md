@@ -1,52 +1,70 @@
-#!/bin/bash
+# Launching an EC2 Instance on AWS 🚀  
 
-# --- Configuration Variables ---
-# You can change these values
+This guide explains how to launch an **Amazon EC2 instance** using both the **AWS Management Console** and the **AWS CLI**.  
 
-KEY_NAME="my-cli-key"
-SECURITY_GROUP_NAME="my-cli-sg"
-INSTANCE_TYPE="t2.micro"
-# Get the latest Amazon Linux 2 AMI ID for the us-east-1 region
-# To find an AMI for a different region, use the AWS Console or EC2 API.
-AMI_ID="ami-0c55b159cbfafe1f0" 
+---
 
-echo "🚀 Starting EC2 instance launch..."
+## ✅ Prerequisites
+- AWS account → [Sign up here](https://aws.amazon.com/)  
+- IAM user with EC2 permissions  
+- AWS CLI installed → [Install Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)  
+- Configured AWS CLI → `aws configure`  
+- Key pair for SSH access  
 
-# 1. Create a new key pair and save the private key to a .pem file
-echo "🔑 Creating key pair: $KEY_NAME"
-aws ec2 create-key-pair --key-name "$KEY_NAME" --query 'KeyMaterial' --output text > "$KEY_NAME.pem"
-# Secure the key file
-chmod 400 "$KEY_NAME.pem"
+---
 
-# 2. Get the default VPC ID
-VPC_ID=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text)
-echo "🌐 Using default VPC: $VPC_ID"
+# 🌐 Method 1: Using AWS Management Console  
 
-# 3. Create a security group to allow SSH access
-echo "🔒 Creating security group: $SECURITY_GROUP_NAME"
-GROUP_ID=$(aws ec2 create-security-group --group-name "$SECURITY_GROUP_NAME" --description "Allow SSH access" --vpc-id "$VPC_ID" --query 'GroupId' --output text)
+### 1. Log in to AWS Console  
+Go to [AWS Console](https://aws.amazon.com/console/) and sign in.  
+![AWS Console](https://d1.awsstatic.com/console/console-homepage.png)  
 
-# 4. Add a rule to the security group to allow inbound SSH traffic (port 22)
-aws ec2 authorize-security-group-ingress --group-id "$GROUP_ID" --protocol tcp --port 22 --cidr 0.0.0.0/0
+---
 
-echo " firewall rule for SSH..."
+### 2. Open EC2 Service  
+Search **EC2** in the search bar and open it.  
+![EC2 Dashboard](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/images/EC2Dashboard.png)  
 
-# 5. Launch the EC2 instance with the created resources
-echo "💻 Launching instance of type $INSTANCE_TYPE with AMI $AMI_ID..."
-INSTANCE_ID=$(aws ec2 run-instances \
-    --image-id "$AMI_ID" \
-    --instance-type "$INSTANCE_TYPE" \
-    --key-name "$KEY_NAME" \
-    --security-group-ids "$GROUP_ID" \
-    --query 'Instances[0].InstanceId' \
-    --output text)
+---
 
-echo "✅ Instance launch initiated! Instance ID: $INSTANCE_ID"
-echo "⏳ Waiting for instance to enter 'running' state..."
+### 3. Click **Launch Instance**  
+From the EC2 dashboard, select **Launch Instance**.  
+![Launch Instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/images/launch-instance-button.png)  
 
-aws ec2 wait instance-running --instance-ids "$INSTANCE_ID"
+---
 
-PUBLIC_IP=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+### 4. Choose an Amazon Machine Image (AMI)  
+Pick your OS (Amazon Linux 2, Ubuntu, etc.).  
+![Choose AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/images/choose-ami.png)  
 
-echo "🎉 Instance is running! Connect using:"
-echo "ssh -i \"$KEY_NAME.pem\" ec2-user@$PUBLIC_IP"
+---
+
+### 5. Select Instance Type  
+Choose instance type (e.g., `t2.micro` for free tier).  
+![Instance Type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/images/choose-instance-type.png)  
+
+---
+
+### 6. Create / Select Key Pair  
+Download a **.pem** key file for SSH access.  
+![Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/images/key-pair.png)  
+
+---
+
+### 7. Configure Security Group  
+Allow **SSH (22)**, **HTTP (80)**, or other required ports.  
+![Security Group](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/images/security-group.png)  
+
+---
+
+### 8. Launch the Instance  
+Click **Launch Instance** and wait until status = **Running**.  
+![Running Instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/images/running-instance.png)  
+
+---
+
+### 9. Connect to Instance  
+- Select your instance → **Connect**  
+- Use SSH command:  
+```bash
+ssh -i your-key.pem ec2-user@<Public-IP>
